@@ -11,18 +11,19 @@ Servo skullMouse;
 /////////////커스텀 설정 부분/////////////
 
 const int countMin = 2; // 카운트 최솟값
-const int countMax = 15; // 카운트 최댓값
+const int countMax = 20; // 카운트 최댓값
 int servoSpeed = 4; // 서보모터 스피드 (1~8 숫자 적을 수록 빠름)
 int servoAngleMin = 0; // 서보모터 최소 각도 (0~180도)
 int servoAngleMax = 180; // 서보모터 최대 각도 (0~180도)
+int bombNum = 5; // 폭탄 터졌을 때 서보모터 움직이는 횟수
 
 /////////////////////////////////////
 
 
-const int sensorNum = 3; // 센서 연결 한 아두이노 포트
-const int buttonNum = 4; // 버튼 연결 한 아두이노 포트
-const int ledNum = 5; // LED 연결 한 아두이노 포트
-const int servoNum = 6; // 서모보터 연결 한 아두이노 포트
+const int sensorNum = 3; // 센서 연결한 아두이노 포트
+const int buttonNum = 4; // 버튼 연결한 아두이노 포트
+const int ledNum = 5; // LED 연결한 아두이노 포트
+const int servoNum = 6; // 서모보터 연결한 아두이노 포트
 
 boolean sensor; // 센서 들어오는 값 변수
 boolean button; // 버튼 들어오는 값 변수
@@ -30,10 +31,10 @@ boolean button; // 버튼 들어오는 값 변수
 boolean buttonFlag = 0; // 버튼 상태 판단 변수
 boolean sensorFlag = 0; // 센서 상태 판단 변수
 
-boolean bombReady = 0;
+boolean bombReady = 0; // 폭탄 터진 상태 판단 변수
 
-int bombCounter = 0;
-int counter = 0;
+int bombCounter = 0; // 미리 랜덤으로 설정한 폭탄 카운트 값
+int counter = 0; // 현재 카운트 되고 있는 값
 
 
 void setup() {
@@ -43,7 +44,7 @@ void setup() {
 
   randomSeed(analogRead(0)); // 랜덤변수 생성자
 
-  Serial.begin(9600);
+  //Serial.begin(9600);
 }
 
 void loop() {
@@ -75,8 +76,8 @@ void loop() {
 
     //// 센서 감지에 의해 카운트 된 숫자와 폭탄 카운트 숫자가 일치하면 폭탄을 터트리는 조건문 ////
     if (counter != 0 && counter == bombCounter) {
-      bomb(servoAngleMax, servoSpeed); // bomb(서보 움직임 각도, 스피드 1~10)
-      ledTwinkle(6, 300); // ledTwinkle(LED깜박임 횟수, 속도 100~500)
+      bomb(servoAngleMax, servoSpeed, bombNum); // bomb(서보 움직임 각도, 스피드, 횟수)
+      //ledTwinkle(6, 300); // ledTwinkle(LED깜박임 횟수, 속도 100~500)
       bombReady = false;
     } else if (sensorFlag) {
       delay(500); // 센서 감지된 직후 지연 시간
@@ -84,7 +85,7 @@ void loop() {
 
   }
 
-
+/*
   Serial.print("counter:");
   Serial.print(counter);
   Serial.print("   ");
@@ -94,21 +95,24 @@ void loop() {
   Serial.print("bombCounter: ");
   Serial.print(bombCounter);
   Serial.println();
-
+*/
 }
 
 
-
-void bomb(int angle, int motorSpeed) { // 폭탄 터트리기 함수 - 서보 모터 움직이기
+//// 폭탄 터트리기 함수 - 서보 모터 움직이기 (스피드, 횟수) ////
+void bomb(int angle, int motorSpeed, int num) {
   skullMouse.attach(servoNum);
-  for (int i = servoAngleMin; i < angle; i++) {
-    skullMouse.write(i);
-    delay(motorSpeed);
-  }
-  delay(300);
-  for (int i = angle; i > servoAngleMin; i--) {
-    skullMouse.write(i);
-    delay(motorSpeed);
+  for (int j = 0; j < num; j++) {
+    for (int i = servoAngleMin; i < angle; i++) {
+      skullMouse.write(i);
+      delay(motorSpeed);
+    }
+    delay(300);
+    for (int i = angle; i > servoAngleMin; i--) {
+      skullMouse.write(i);
+      delay(motorSpeed);
+    }
+    delay(300);
   }
   skullMouse.detach();
 }
